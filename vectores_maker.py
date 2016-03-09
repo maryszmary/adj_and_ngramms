@@ -135,14 +135,6 @@ def pos_checker(bigram, substantivated = subst_adj):
              or bigram[2][u'analysis'][0][u'lex'] in subst_adj)
     return a
 
-##########
-##to do:
-##    -- написать bastard dealer (qual имплицирует bastard): spell-checker (Алёна)
-##    -- подумать, что делать с образовательницней (ничего?)
-##    -- субстантивированные прилагательные
-##    -- сделать что-то с умной животиной и "хитрых лис", "хитрого лиса"
-##########
-
 def agreement_checker(bigram):
     '''получает массив словарей с разбором биграммы, возвращает True, если среди
     грамматических разборов 1 и 2 слов есть одинаковые по роду, числу и падежу,
@@ -192,13 +184,13 @@ def input_checker(word, translit = translit):
             print word + u' : there is some mistake'
             return None
     else:
-        base = word[:-2]
+        transliterated = u''.join([translit[l] for l in word])
         # flections = [adj_fl_p if fl == u'ий' else adj_fl_np for fl in [word[-2:]]][0] # хорош баловаться с генераторами, сделай нормально
         if [word[-2:]] == u'ий':
             flections = adj_fl_p
         else:
             flections = adj_fl_np
-        return base, translit[base[0]] + translit[base[1]], flections
+        return word[:-2], transliterated, flections
 
 
 def file_walker(words):
@@ -207,24 +199,25 @@ def file_walker(words):
     dictionaries = []
     for word in words:
         if input_checker(word) is not None:
-            base, filename, flections = input_checker(word)
-            print filename + u'\n' + base + u'\nstart: ' + str(time.clock())
+            base, transliterated, flections = input_checker(word)
+            
+            print transliterated[:2] + u'\n' + base + u'\nstart: ' + str(time.clock())
 
-            # try:
-            # a = cleaner(u'cleaned\\' + u''.join([translit[l] for l in word]) + u'.txt', base, flections = flections)
-            # except:
-            a = cleaner(filename, base, flections = flections)
+            try:
+                a = cleaner(u'cleaned\\' + transliterated + u'.txt', base, flections = flections)
+            except:
+                a = cleaner(transliterated[:2], base, flections = flections)
 
-            with codecs.open(u'C:\\google ngramms\\russian\\cleaned\\' + u''.join([translit[l] for l in word]) + u'.txt', u'w', u'utf-8') as quick:
+            with codecs.open(u'C:\\google ngramms\\russian\\cleaned\\' + transliterated + u'.txt', u'w', u'utf-8') as quick:
                 for el in a:
                     quick.write(el)
             # print u'after cleaner: ' + str(time.clock())
             analyzed = grammar_analyzer(year_merger(a))
-            with codecs.open(u'C:\\google ngramms\\russian\\analyzed\\' + base + u'-an.json', u'w', u'utf-8')as f:
+            with codecs.open(u'C:\\google ngramms\\russian\\analyzed\\' + transliterated + u'-an.json', u'w', u'utf-8')as f:
                 json.dump(analyzed, f, ensure_ascii=False, indent=2)
             d = final_dictionary(analyzed)
             dictionaries.append(d)
-            with codecs.open(u'C:\\google ngramms\\russian\\dictionaries\\' + base + u'-final.json', u'w', u'utf-8')as f:
+            with codecs.open(u'C:\\google ngramms\\russian\\dictionaries\\' + transliterated + u'-final.json', u'w', u'utf-8')as f:
                 json.dump(d, f, ensure_ascii=False, indent=2)
     return dictionaries
 
@@ -264,20 +257,11 @@ def vectores():
 vectores()
 
 
-# затестить на одном файле
-# current = u'um'
-# print u'start: ' + str(time.clock())
-# lines = cleaner(u'_' + current + '.txt', u'умн')
-# print u'after cleaner: ' + str(time.clock())
-# print len(lines)
-# merged = year_merger(lines)
-# print u'after year_merger: ' + str(time.clock())
-# print len(merged)
-# analized = grammar_analyzer(merged)
-# d = final_dictionary(analized)
 
-# with codecs.open(current + u'.json', u'w', u'utf-8')as f:
-#    json.dump(analized, f, ensure_ascii=False, indent=2)
-
-# with codecs.open(current + u'-final.json', u'w', u'utf-8')as f:
-#    json.dump(d, f, ensure_ascii=False, indent=2)
+##########
+##to do:
+##    -- написать bastard dealer (qual имплицирует bastard): spell-checker (Алёна)
+##    -- подумать, что делать с образовательницней (ничего?)
+##    -- субстантивированные прилагательные (как-нибудь надёжно пополнить их количество)
+##    -- сделать что-то с умной животиной и "хитрых лис", "хитрого лиса"
+##########
