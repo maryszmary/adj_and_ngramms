@@ -258,7 +258,7 @@ def vectores():
         vects[current_word] = vect
         print u'dict: ' + str(len(d))
         print u'vect: ' + str(len(vect))
-    print vects[u'мудрый']
+    print vects[u'начитанный']
 
 
 vectores()
