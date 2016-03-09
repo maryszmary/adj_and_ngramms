@@ -211,11 +211,11 @@ def file_walker(words):
             print filename + u'\n' + base + u'\nstart: ' + str(time.clock())
 
             # try:
-            a = cleaner(u'cleaned\\' + filename + u'.txt', base, flections = flections)
+            # a = cleaner(u'cleaned\\' + u''.join([translit[l] for l in word]) + u'.txt', base, flections = flections)
             # except:
-            # a = cleaner(filename, base, flections = flections)
+            a = cleaner(filename, base, flections = flections)
 
-            with codecs.open(u'C:\\google ngramms\\russian\\cleaned\\' + filename + u'.txt', u'w', u'utf-8') as quick:
+            with codecs.open(u'C:\\google ngramms\\russian\\cleaned\\' + u''.join([translit[l] for l in word]) + u'.txt', u'w', u'utf-8') as quick:
                 for el in a:
                     quick.write(el)
             # print u'after cleaner: ' + str(time.clock())
@@ -258,7 +258,7 @@ def vectores():
         vects[current_word] = vect
         print u'dict: ' + str(len(d))
         print u'vect: ' + str(len(vect))
-    print vects[u'начитанный']
+    print vects[u'хитрый']
 
 
 vectores()
