@@ -32,20 +32,21 @@ translit = {u'а':u'a', u'б':u'b', u'в':u'v', u'г':u'g', u'д':u'd',
 
 m = Mystem()
 
-def cleaner(filename, base = u'умн', flections = adj_fl_np, trash = stop_words_a):
+def cleaner(filename, base, flections = adj_fl_np, trash = stop_words_a):
     '''получает на вход название файла, содержащего биграммы, основу
     прилагательного и массив окончаний, возвращает словарь с биграммами, очищенными от мусора'''
     forms = [base + aff for aff in flections] + [base[0].upper() + base[1:] + aff for aff in flections]
     with codecs.open(u'C:\\google ngramms\\russian\\' + filename,'r', u'utf-8') as f:
 
         ## здесь отбрасываются все разобранные биграммы, биграммы, которые
-        ## содержат стоп-слова и биграммы, зафиксированные раньше 1930 года
-        ## и отбираются те, первое слово которых -- словоформа данной лексемы
+        ## содержат стоп-слова, биграммы, зафиксированные раньше 1930 года
+        ## и биграммы, в которых второе слово начинается с апперкейса.
+        ## отбираются те, первое слово которых -- словоформа данной лексемы
         lines = {line.lower(): 1 for line in f
-                 if u'_' not in line\
+                 if u'_' not in line
                  and int(line.split(u'\t')[1]) > 1929
-                 and line.split(u'\t')[0].split()[0] in forms\
-                 and line.split(u'\t')[0].split()[1] not in trash\
+                 and line.split(u'\t')[0].split()[0] in forms
+                 and line.split(u'\t')[0].split()[1] not in trash
                  and line.split(u'\t')[0].split()[1][0] not in u'АБВГДЕЁЖЗИЙКЛМНОПРСТУФХЦЧШЩЮЯ'}
     return lines
 
@@ -195,7 +196,7 @@ def input_checker(word, translit = translit):
 
 def file_walker(words):
     '''получает на вход массив слов, для каждого слова запускает другие функции,
-    которые обрабатывают файлы'''
+    которые обрабатывают файлы, возвращает массив частотных словарей'''
     dictionaries = []
     for word in words:
         if input_checker(word) is not None:
@@ -222,13 +223,10 @@ def file_walker(words):
     return dictionaries
 
 
-def vectores():
+def vectores(dictionaries):
     '''читает файл с лексемами, запускает их в file_walker и составляет
     для каждой вектор. возвращает словарь, где ключ -- лексема, а значение -- вектор.
     главная функция'''
-    with codecs.open('lexems.txt', u'r', u'utf-8') as f:
-        words = [line.strip() for line in f.readlines()]
-    dictionaries = file_walker(words)
 
     collocates = set([col.split()[1] for d in dictionaries for col in list(d)])
     print u'length of all collocates: ' + str(len(collocates))
@@ -251,11 +249,21 @@ def vectores():
         vects[current_word] = vect
         print u'dict: ' + str(len(d))
         print u'vect: ' + str(len(vect))
-    print vects[u'хитрый']
+    print vects[u'умный']
+    return vects
 
+def main():
+    with codecs.open('lexems.txt', u'r', u'utf-8') as f:
+        words = [line.strip() for line in f.readlines()]
+    dictionaries = file_walker(words)
 
-vectores()
+    vects = vectores(dictionaries)
+    for vec in vects:
+        with codecs.open(u'vecors\\' + vec + u'.txt', u'w', u'utf-8') as f:
+            for num in vects:
+                f.write(str(num))
 
+main()
 
 
 ##########
