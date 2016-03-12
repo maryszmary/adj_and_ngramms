@@ -111,7 +111,7 @@ def final_dictionary(for_checking):
     print u'length of dictionary: ' +  str(len(what_i_need))
     return what_i_need
     
-# ПОКА ЕЩЁ НИГДЕ НЕ ВЫЗВАЕТСЯ. заменить на спеллчекер.
+# заменить на спеллчекер.
 def those_are_not_bastards(not_analyzed_bigrams):
     '''берёт бираммы до майстема, прогоняет их через словарь исключений,
 возвращает те же биграммы в чуть более адекватном виде'''
@@ -202,7 +202,7 @@ def file_walker(words):
         if input_checker(word) is not None:
             base, transliterated, flections = input_checker(word)
             
-            print transliterated[:2] + u'\n' + base + u'\nstart: ' + str(time.clock())
+            print transliterated + u'\nstart: ' + str(time.clock())
 
             try:
                 a = cleaner(u'cleaned\\' + transliterated + u'.txt', base, flections = flections)
@@ -249,8 +249,8 @@ def vectores(dictionaries):
         vects[current_word] = vect
         print u'dict: ' + str(len(d))
         print u'vect: ' + str(len(vect))
-    print vects[u'умный']
     return vects
+
 
 def main():
     with codecs.open('lexems.txt', u'r', u'utf-8') as f:
@@ -259,9 +259,9 @@ def main():
 
     vects = vectores(dictionaries)
     for vec in vects:
-        with codecs.open(u'vecors\\' + vec + u'.txt', u'w', u'utf-8') as f:
-            for num in vects:
-                f.write(str(num))
+        with codecs.open(u'vectors\\' + u''.join([translit[l] for l in vec]) + u'.json', u'w', u'utf-8') as f:
+            # for num in vects:
+            json.dumps(vec, f, ensure_ascii = False)
 
 main()
 
