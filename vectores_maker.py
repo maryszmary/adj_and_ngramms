@@ -261,7 +261,7 @@ def main():
     for vec in vects:
         with codecs.open(u'vectors\\' + u''.join([translit[l] for l in vec]) + u'.json', u'w', u'utf-8') as f:
             # for num in vects:
-            json.dumps(vec, f, ensure_ascii = False)
+            json.dump(vects[vec], f, ensure_ascii = False)
 
 main()
 
