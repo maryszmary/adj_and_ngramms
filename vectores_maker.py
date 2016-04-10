@@ -204,10 +204,7 @@ def file_walker(words):
             
             print transliterated + u'\nstart: ' + str(time.clock())
 
-            try:
-                a = cleaner(u'cleaned\\' + transliterated + u'.txt', base, flections = flections)
-            except:
-                a = cleaner(transliterated[:2], base, flections = flections)
+            a = fastener(transliterated, base, flections)
 
             with codecs.open(u'C:\\google ngramms\\russian\\cleaned\\' + transliterated + u'.txt', u'w', u'utf-8') as quick:
                 for el in a:
@@ -220,7 +217,18 @@ def file_walker(words):
             dictionaries.append(d)
             with codecs.open(u'C:\\google ngramms\\russian\\dictionaries\\' + transliterated + u'-final.json', u'w', u'utf-8')as f:
                 json.dump(d, f, ensure_ascii=False, indent=2)
+            print transliterated + u'\nfinish: ' + str(time.clock())
     return dictionaries
+
+def fastener(transliterated, base, flections):
+    try:
+        a = cleaner(u'cleaned/' + transliterated + u'.txt', base, flections = flections)
+    except:
+        try:
+            a = cleaner(u'for_adjectives/' + transliterated[:2], base, flections = flections)
+        except:
+            a = cleaner(transliterated[:2], base, flections = flections)
+    return a
 
 
 def vectores(dictionaries):
@@ -246,11 +254,10 @@ def vectores(dictionaries):
                     vect.append(0)
                     # print current_word + u' ' + el + u' : ' + str(0)
 
-        vects[current_word] = vect
-        print u'dict: ' + str(len(d))
-        print u'vect: ' + str(len(vect))
+            vects[current_word] = vect
+            print u'dict: ' + str(len(d))
+            print u'vect: ' + str(len(vect))
     return vects
-
 
 def main():
     with codecs.open('lexems.txt', u'r', u'utf-8') as f:
