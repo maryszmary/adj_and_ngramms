@@ -16,7 +16,8 @@ def vectores_union(dictionaries):
     главная функция'''
 
     collocates = set([col.split()[1] for d in dictionaries for col in list(d)])
-    print u'length of all collocates: ' + str(len(collocates))
+    #collocates = intersect(dictionaries)
+    print(u'length of all collocates: ' + str(len(collocates)))
     vects = {}
     for d in dictionaries:
         if len(d) > 0:
@@ -34,8 +35,8 @@ def vectores_union(dictionaries):
                     # print current_word + u' ' + el + u' : ' + str(0)
 
             vects[current_word] = vect
-            print current_word
-            print u'dict: ' + str(len(d))
+            print(current_word)
+            print(u'dict: ' + str(len(d)))
     return vects
 
 def intersect(dictionaries):
@@ -44,51 +45,24 @@ def intersect(dictionaries):
         current_colls = set([key.split()[1] for key in d.keys()])
         if st:
             intersection = intersection.intersection(current_colls)
-            print '\nint: '
+            print('\nint: ')
             for el in intersection:
-                print el,
+                print(el, end = ',')
         else:
             intersection = current_colls
             st = True
     return intersection
 
-def vectores_intersection(dictionaries):
-    '''читает файл с лексемами, запускает их в file_walker и составляет
-    для каждой вектор. возвращает словарь, где ключ -- лексема, а значение -- вектор.
-    главная функция'''
-
-    collocates = intersect(dictionaries)
-    print u'collocates: '
-    for el in collocates:
-        print el
-    print u'length of all collocates: ' + str(len(collocates))
-    vects = {}
-    for d in dictionaries:
-        if len(d) > 0:
-            vect = []
-            current_word = d.keys()[0].split()[0]
-            for el in collocates:
-                isthere = False
-                for key in d:
-                    if el == key.split()[1]:
-                        isthere = True
-                        vect.append(d[key])
-                        # print current_word + u' ' + el + u' : ' + str(d[key])
-                if not isthere:
-                    vect.append(0)
-                    # print current_word + u' ' + el + u' : ' + str(0)
-
-            vects[current_word] = vect
-            print current_word
-            print u'dict: ' + str(len(d))
-    return vects
-
 def dictionaries_collector(lexemes):
     dicts = {}
-    with codecs.open('C:\\google ngramms\\russian\\dictionaries\\' + lex + '.json', 'r', 'utf-8') as f:
-        d = json.load(f)
-        dicts[lex] = d
-    C:\\google ngramms\\russian\\dictionaries\\
+    for lex in lexemes:
+        with codecs.open('C:\\google ngramms\\russian\\dictionaries\\' + lex + '-final.json', 'r', 'utf-8') as f:
+            d = json.load(f)
+            dicts[lex] = d
+
+    for key in dicts['ostryj']:
+        print(key + ' : ' + str(dicts['ostryj'][key]))
+    return dicts
 
 def vectors_collector(lexemes):
     vecs = {}
@@ -109,4 +83,4 @@ def distance_counter(vects, root):
 with codecs.open('lexems.txt', u'r', u'utf-8') as f:
     words = [line.strip() for line in f.readlines() if line != '\r\n' and '@' not in line and '#' not in line]
 transliterated = [u''.join([translit[l] for l in word]) for word in words]
-distance_counter(vectors_collector(transliterated), 'ostryj')
+distance_counter(vectores_union(dictionaries_collector(transliterated)), 'ostryj')
