@@ -229,7 +229,6 @@ def file_walker(words):
 
 def fastener(transliterated, base, flections):
     try:
-        aaa
         a = cleaner(u'cleaned/' + transliterated + u'.txt', base, flections = flections)
     except:
         try:
@@ -248,7 +247,7 @@ def main():
     with codecs.open('lexems.txt', u'r', u'utf-8') as f:
         words = [line.strip() for line in f.readlines()]
     dictionaries = file_walker(words)
-    
+
 main()
 
 
