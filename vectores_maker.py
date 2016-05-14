@@ -5,6 +5,8 @@ import os
 from pymystem3 import Mystem
 import time
 import json
+import file_cleaner
+import math
 
 adj_fl_np = [u'ый', u'ое', u'ая', u'ые', u'ого', u'ой', u'ых', u'ому',
              u'ым', u'ую', u'ою', u'ыми', u'ом']
@@ -28,7 +30,7 @@ translit = {u'а':u'a', u'б':u'b', u'в':u'v', u'г':u'g', u'д':u'd',
              u'п':u'p', u'р':u'r', u'с':u's', u'т':u't', u'у':u'u',
              u'ф':u'f', u'х':u'h', u'ц':u'c', u'ч':u'c', u'ш':u's',
              u'щ':u's', u'ь':u'', u'ы':u'y', u'ъ':u'', u'э':u'e',
-             u'ю':u'u', u'я':u'a'}
+             u'ю':u'u', u'я':u'a', u'ё': u'e'}
 
 m = Mystem()
 
@@ -107,7 +109,8 @@ def final_dictionary(for_checking):
                 what_i_need[new_bigram] = what_i_need.get(new_bigram, 0) + el[1]
     total_utterances = sum([what_i_need[key]for key in what_i_need])
     print 'total: ' + str(total_utterances)
-    what_i_need = {bigram:(what_i_need[bigram]/float(total_utterances)) for bigram in what_i_need}
+##    what_i_need = {bigram:(what_i_need[bigram]/float(total_utterances)) for bigram in what_i_need} # здесь абсолютное кол-во вхождений превращается в частотность
+##    what_i_need = {bigram:(math.log(what_i_need[bigram])) for bigram in what_i_need}
     print u'length of dictionary: ' +  str(len(what_i_need))
     return what_i_need
     
@@ -134,6 +137,8 @@ def pos_checker(bigram, substantivated = subst_adj):
         and len(bigram[2][u'analysis']) > 0\
         and (bigram[2][u'analysis'][0][u'gr'][:2] == u'S,'
              or bigram[2][u'analysis'][0][u'lex'] in subst_adj)
+    if not a:
+        print 'noooooooooo: ' + bigram[0][u'text'] + u' ' + bigram[2][u'text'] + u'\n'
     return a
 
 def agreement_checker(bigram):
@@ -162,6 +167,7 @@ def agreement_checker(bigram):
 ##            print el
 ##        print u'---------------------'
 ##    print u'\n====================\n'
+    print 'noooooooooo: ' + bigram[0][u'text'] + u' ' + bigram[1][u'text'] + u'\n'
     return False
 
 
@@ -181,17 +187,18 @@ def hypothesis_collector(bigram):
 def input_checker(word, translit = translit):
     '''получает слово, возвращает название файла и основу, если это похоже на русское прилагательное.
     вызывается в file_walker'''
-    if word[-2:] not in [u'ый', u'ий', u'ой']:
+    if u'#' not in word:
+        if word[-2:] not in [u'ый', u'ий', u'ой']:
             print word + u' : there is some mistake'
             return None
-    else:
-        transliterated = u''.join([translit[l] for l in word])
-        # flections = [adj_fl_p if fl == u'ий' else adj_fl_np for fl in [word[-2:]]][0] # хорош баловаться с генераторами, сделай нормально
-        if [word[-2:]] == u'ий':
-            flections = adj_fl_p
         else:
-            flections = adj_fl_np
-        return word[:-2], transliterated, flections
+            transliterated = u''.join([translit[l] for l in word])
+            # flections = [adj_fl_p if fl == u'ий' else adj_fl_np for fl in [word[-2:]]][0] # хорош баловаться с генераторами, сделай нормально
+            if [word[-2:]] == u'ий':
+                flections = adj_fl_p
+            else:
+                flections = adj_fl_np
+            return word[:-2], transliterated, flections
 
 
 def file_walker(words):
@@ -222,54 +229,26 @@ def file_walker(words):
 
 def fastener(transliterated, base, flections):
     try:
+        aaa
         a = cleaner(u'cleaned/' + transliterated + u'.txt', base, flections = flections)
     except:
         try:
             a = cleaner(u'for_adjectives/' + transliterated[:2], base, flections = flections)
         except:
-            a = cleaner(transliterated[:2], base, flections = flections)
+            try:
+                file_cleaner.cleaner(transliterated[:2])
+                a = cleaner(u'for_adjectives/' + transliterated[:2], base, flections = flections)
+            except:
+                a = []
+                print transliterated + ': no file for it'
     return a
 
-
-def vectores(dictionaries):
-    '''читает файл с лексемами, запускает их в file_walker и составляет
-    для каждой вектор. возвращает словарь, где ключ -- лексема, а значение -- вектор.
-    главная функция'''
-
-    collocates = set([col.split()[1] for d in dictionaries for col in list(d)])
-    print u'length of all collocates: ' + str(len(collocates))
-    vects = {}
-    for d in dictionaries:
-        if len(d) > 0:
-            vect = []
-            current_word = d.keys()[0].split()[0]
-            for el in collocates:
-                isthere = False
-                for key in d:
-                    if el == key.split()[1]:
-                        isthere = True
-                        vect.append(d[key])
-                        # print current_word + u' ' + el + u' : ' + str(d[key])
-                if not isthere:
-                    vect.append(0)
-                    # print current_word + u' ' + el + u' : ' + str(0)
-
-            vects[current_word] = vect
-            print u'dict: ' + str(len(d))
-            print u'vect: ' + str(len(vect))
-    return vects
 
 def main():
     with codecs.open('lexems.txt', u'r', u'utf-8') as f:
         words = [line.strip() for line in f.readlines()]
     dictionaries = file_walker(words)
-
-    vects = vectores(dictionaries)
-    for vec in vects:
-        with codecs.open(u'vectors\\' + u''.join([translit[l] for l in vec]) + u'.json', u'w', u'utf-8') as f:
-            # for num in vects:
-            json.dump(vects[vec], f, ensure_ascii = False)
-
+    
 main()
 
 

@@ -17,7 +17,7 @@ stop_words_a = [u',', u'.', u'!', u')', u'«', u'*', u'"', u':', u'-', '--', u';
                 u'ь', u'уже', u'даже']
 
 
-def cleaner(filename, flections = adj_fl_np, trash = stop_words_a):
+def cleaner(filename, flections = adj_fl_np + adj_fl_p, trash = stop_words_a):
     '''получает на вход название файла, содержащего биграммы, основу
     прилагательного и массив окончаний, возвращает словарь с биграммами, очищенными от мусора'''
     with codecs.open(u'C:\\google ngramms\\russian\\' + filename,'r', u'utf-8') as f:
@@ -36,7 +36,7 @@ def cleaner(filename, flections = adj_fl_np, trash = stop_words_a):
     		f1.write(line)
     return f1
 
-def mem_safe_cleaner(filename, flections = adj_fl_np, trash = stop_words_a):
+def mem_safe_cleaner(filename, flections = adj_fl_np + adj_fl_p, trash = stop_words_a):
     '''the same function but for really big files in order to avoid Memory error'''
     f_new = codecs.open('C:\\google ngramms\\russian\\for_adjectives\\' + filename, u'w', u'utf-8')
     with codecs.open(u'C:\\google ngramms\\russian\\' + filename,'r', u'utf-8') as f:
@@ -49,4 +49,6 @@ def mem_safe_cleaner(filename, flections = adj_fl_np, trash = stop_words_a):
                 f_new.write(line)
     f_new.close()
 
-mem_safe_cleaner('pr', adj_fl_np + adj_fl_p)
+##for el in [u'av', u'ag', u'ad', u'ae', u'az', u'ai', u'aj', u'ak', u'al', u'am', u'an', u'ao', u'ap', u'ar', u'as', u'at',
+##           u'au', u'af', u'ah', u'ac']:
+##    mem_safe_cleaner(el, adj_fl_np + adj_fl_p)
