@@ -38,7 +38,7 @@ def cleaner(filename, base, flections = adj_fl_np, trash = stop_words_a):
     '''получает на вход название файла, содержащего биграммы, основу
     прилагательного и массив окончаний, возвращает словарь с биграммами, очищенными от мусора'''
     forms = [base + aff for aff in flections] + [base[0].upper() + base[1:] + aff for aff in flections]
-    with codecs.open(u'C:\\google ngramms\\russian\\' + filename,'r', u'utf-8') as f:
+    with codecs.open(filename,'r', u'utf-8') as f:
 
         ## здесь отбрасываются все разобранные биграммы, биграммы, которые
         ## содержат стоп-слова, биграммы, зафиксированные раньше 1930 года
@@ -211,12 +211,15 @@ def file_walker(words):
             
             print transliterated + u'\nstart: ' + str(time.clock())
 
-            a = fastener(transliterated, base, flections)
+            try:
+                aaa
+                a = fastener(transliterated, base, flections, u'C:\\ruscorp\\bigrams_from_ruscorpora')
+            except:
+                a = fastener(transliterated, base, flections, u'C:\\google ngramms\\russian\\')
 
-            with codecs.open(u'C:\\google ngramms\\russian\\cleaned\\' + transliterated + u'.txt', u'w', u'utf-8') as quick:
+            with codecs.open(u'C:\\ruscorp\\cleaned\\' + transliterated + u'.txt', u'w', u'utf-8') as quick:
                 for el in a:
                     quick.write(el)
-            # print u'after cleaner: ' + str(time.clock())
             analyzed = grammar_analyzer(year_merger(a))
             with codecs.open(u'C:\\google ngramms\\russian\\analyzed\\' + transliterated + u'-an.json', u'w', u'utf-8')as f:
                 json.dump(analyzed, f, ensure_ascii=False, indent=2)
@@ -227,19 +230,22 @@ def file_walker(words):
             print transliterated + u'\nfinish: ' + str(time.clock())
     return dictionaries
 
-def fastener(transliterated, base, flections):
+def fastener(transliterated, base, flections, path):
     try:
-        a = cleaner(u'cleaned/' + transliterated + u'.txt', base, flections = flections)
+        a = cleaner(path, base, flections = flections)
     except:
         try:
-            a = cleaner(u'for_adjectives/' + transliterated[:2], base, flections = flections)
+            a = cleaner(path + u'cleaned/' + transliterated + u'.txt', base, flections = flections)
         except:
             try:
-                file_cleaner.cleaner(transliterated[:2])
-                a = cleaner(u'for_adjectives/' + transliterated[:2], base, flections = flections)
+                a = cleaner(path + u'for_adjectives/' + transliterated[:2], base, flections = flections)
             except:
-                a = []
-                print transliterated + ': no file for it'
+                try:
+                    file_cleaner.cleaner(transliterated[:2])
+                    a = cleaner(path + u'for_adjectives/' + transliterated[:2], base, flections = flections)
+                except:
+                    a = []
+                    print transliterated + ': no file for it'
     return a
 
 
