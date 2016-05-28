@@ -8,10 +8,12 @@ import json
 import file_cleaner
 import math
 
-adj_fl_np = [u'ый', u'ое', u'ая', u'ые', u'ого', u'ой', u'ых', u'ому',
-             u'ым', u'ую', u'ою', u'ыми', u'ом']
-adj_fl_p = [u'ий', u'ее', u'яя', u'ие', u'его', u'ей', u'их', u'ему',
-            u'им', u'юю', u'ею', u'ими', u'ем']
+PATH = u'C:\\google ngramms\\russian\\'
+
+FLECTIONS = [u'ый', u'ое', u'ая', u'ые', u'ого', u'ой', u'ых', u'ому',
+             u'ым', u'ую', u'ою', u'ыми', u'ом',
+             u'ий', u'ее', u'яя', u'ие', u'его', u'ей', u'их', u'ему',
+             u'им', u'юю', u'ею', u'ими', u'ем']
 stop_words_a = [u',', u'.', u'!', u')', u'«', u'*', u'"', u':', u'-', '--', u';',
                 u'...', u'?', u'»', u'(', u'п', u'на', u'у', u'не', u'да',
                 u'и', u'с', u'по', u'ни', u'или', u'же', u'из', u'во',
@@ -34,10 +36,12 @@ translit = {u'а':u'a', u'б':u'b', u'в':u'v', u'г':u'g', u'д':u'd',
 
 m = Mystem()
 
-def cleaner(filename, base, flections = adj_fl_np, trash = stop_words_a):
+def cleaner(filename, base, flections = FLECTIONS, trash = stop_words_a):
     '''получает на вход название файла, содержащего биграммы, основу
     прилагательного и массив окончаний, возвращает словарь с биграммами, очищенными от мусора'''
     forms = [base + aff for aff in flections] + [base[0].upper() + base[1:] + aff for aff in flections]
+##    for form in forms:
+##        print(form)
     with codecs.open(filename,'r', u'utf-8') as f:
 
         ## здесь отбрасываются все разобранные биграммы, биграммы, которые
@@ -123,8 +127,13 @@ def those_are_not_bastards(not_analyzed_bigrams):
 def bastards_and_instrumental(sec_word):
     '''берёт 2 слово биграммы, проверяет, не потому ли это бастард,
     что это алломорф инструменталиса, если да -- меняет лемму. вызывается в final_dictionary'''
-    if 'qual' in [key for an in sec_word[u'analysis'] for key in an] and sec_word[u'text'][-2:] == u'ию':
-        sec_word[u'analysis'] = [{u'lex': u'учтивость', u'gr': u'S,жен,неод=твор,ед'}]
+    try:
+        if 'qual' in [key for an in sec_word[u'analysis'] for key in an]\
+           and sec_word[u'text'][-2:] == u'ию':
+            sec_word[u'analysis'] = [{u'lex': u'учтивость', u'gr': u'S,жен,неод=твор,ед'}]
+    except Exception as e:
+        print(e)
+##        exit()
     return sec_word
 
 def pos_checker(bigram, substantivated = subst_adj):
@@ -138,8 +147,8 @@ def pos_checker(bigram, substantivated = subst_adj):
         and (bigram[2][u'analysis'][0][u'gr'][:2] == u'S,'
              or bigram[2][u'analysis'][0][u'lex'] in subst_adj)
     if not a:
-        print 'noooooooooo: ' + bigram[0][u'text'] + u' ' + bigram[2][u'text'] + u'\n'
-    return a
+##        print 'noooooooooo: ' + bigram[0][u'text'] + u' ' + bigram[2][u'text'] + u'\n'
+    return True
 
 def agreement_checker(bigram):
     '''получает массив словарей с разбором биграммы, возвращает True, если среди
@@ -167,7 +176,7 @@ def agreement_checker(bigram):
 ##            print el
 ##        print u'---------------------'
 ##    print u'\n====================\n'
-    print 'noooooooooo: ' + bigram[0][u'text'] + u' ' + bigram[1][u'text'] + u'\n'
+    print 'agreement: ' + bigram[0][u'text'] + u' ' + bigram[1][u'text'] + u'\n'
     return False
 
 
@@ -176,12 +185,16 @@ def hypothesis_collector(bigram):
     возвращает два списка множеств. вызывается в agreement_checker'''
     hyp_a = [hyp.split(u',') for hyp in bigram[0][u'analysis'][0][u'gr'][2:].strip(u'()').split(u'|')]
     hyp_a_cleaned = [set([el for el in hyp if el not in (u'полн', u'устар')]) for hyp in hyp_a]
-    
-    info_s = bigram[1][u'analysis'][0][u'gr'].split(u'=')
-    hyp_s = [u','.join([info_s[0], hyp]).replace(u'местн', u'пр').split(u',')[1:] for hyp in info_s[1].strip(u'()').split(u'|')]
-    hyp_s_cleaned = [set([el for el in hyp if not (el in (u'жен', u'муж', u'сред') and u'мн' in hyp)
-                          and el not in (u'фам', u'имя', u'полн', u'устар', u'обсц')]) for hyp in hyp_s]
-    return hyp_a_cleaned, hyp_s_cleaned
+
+    try:
+        info_s = bigram[1][u'analysis'][0][u'gr'].split(u'=')
+        hyp_s = [u','.join([info_s[0], hyp]).replace(u'местн', u'пр').split(u',')[1:] for hyp in info_s[1].strip(u'()').split(u'|')]
+        hyp_s_cleaned = [set([el for el in hyp if not (el in (u'жен', u'муж', u'сред') and u'мн' in hyp)
+                              and el not in (u'фам', u'имя', u'полн', u'устар', u'обсц')]) for hyp in hyp_s]
+        return hyp_a_cleaned, hyp_s_cleaned
+    except Exception as e:
+        print(e)
+        return [], []
 
 
 def input_checker(word, translit = translit):
@@ -194,11 +207,14 @@ def input_checker(word, translit = translit):
         else:
             transliterated = u''.join([translit[l] for l in word])
             # flections = [adj_fl_p if fl == u'ий' else adj_fl_np for fl in [word[-2:]]][0] # хорош баловаться с генераторами, сделай нормально
-            if [word[-2:]] == u'ий':
-                flections = adj_fl_p
-            else:
-                flections = adj_fl_np
-            return word[:-2], transliterated, flections
+########            if word[-2:] == u'ий':
+########                flections = adj_fl_p
+########            elif word[-2:] == u'ый' or [word[-2:]] == u'ой':
+########                flections = adj_fl_np
+########            else:
+########                print([word[-2:]][0])
+########                flections = ['aaaaaaa']
+            return word[:-2], transliterated
 
 
 def file_walker(words):
@@ -207,45 +223,49 @@ def file_walker(words):
     dictionaries = []
     for word in words:
         if input_checker(word) is not None:
-            base, transliterated, flections = input_checker(word)
+            base, transliterated = input_checker(word)
             
             print transliterated + u'\nstart: ' + str(time.clock())
 
-            try:
-                aaa
-                a = fastener(transliterated, base, flections, u'C:\\ruscorp\\bigrams_from_ruscorpora')
-            except:
-                a = fastener(transliterated, base, flections, u'C:\\google ngramms\\russian\\')
+            a = fastener(transliterated, base, PATH)
 
-            with codecs.open(u'C:\\ruscorp\\cleaned\\' + transliterated + u'.txt', u'w', u'utf-8') as quick:
+            with codecs.open(PATH + u'cleaned\\' + transliterated + u'.txt', u'w', u'utf-8') as quick:
                 for el in a:
                     quick.write(el)
             analyzed = grammar_analyzer(year_merger(a))
-            with codecs.open(u'C:\\google ngramms\\russian\\analyzed\\' + transliterated + u'-an.json', u'w', u'utf-8')as f:
+            with codecs.open(PATH + u'\\analyzed\\' + transliterated + u'-an.json', u'w', u'utf-8')as f:
                 json.dump(analyzed, f, ensure_ascii=False, indent=2)
             d = final_dictionary(analyzed)
             dictionaries.append(d)
-            with codecs.open(u'C:\\google ngramms\\russian\\dictionaries\\' + transliterated + u'-final.json', u'w', u'utf-8')as f:
+            with codecs.open(PATH + u'\\dictionaries\\' + transliterated + u'-final.json', u'w', u'utf-8')as f:
                 json.dump(d, f, ensure_ascii=False, indent=2)
             print transliterated + u'\nfinish: ' + str(time.clock())
     return dictionaries
 
-def fastener(transliterated, base, flections, path):
+def fastener(transliterated, base, path):
     try:
-        a = cleaner(path, base, flections = flections)
-    except:
+        do_not
+        a = cleaner(path + u'cleaned/' + transliterated + u'.txt', base)
+    except Exception as e:
+        print(e)
         try:
-            a = cleaner(path + u'cleaned/' + transliterated + u'.txt', base, flections = flections)
-        except:
+            a = cleaner(path + 'bigrams_opencorpora', base)
+        except Exception as e:
+            print(e)
+
+
+
+        
             try:
-                a = cleaner(path + u'for_adjectives/' + transliterated[:2], base, flections = flections)
-            except:
+                a = cleaner(path + u'for_adjectives/' + transliterated[:2], base)
+            except Exception as e:
+                print(e)
                 try:
-                    file_cleaner.cleaner(transliterated[:2])
-                    a = cleaner(path + u'for_adjectives/' + transliterated[:2], base, flections = flections)
-                except:
+                    file_cleaner.cleaner(path, transliterated[:2])
+                    a = cleaner(path + transliterated[:2], base)
+                except Exception as e:
                     a = []
-                    print transliterated + ': no file for it'
+                    print transliterated + str(e)
     return a
 
 
